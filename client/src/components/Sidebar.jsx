@@ -35,7 +35,7 @@ const Sidebar = () => {
     hamburgerRef.current?.focus();
   };
 
-  const role = "" || "EMPLOYEE";
+  const role = "ADMIN" || "EMPLOYEE";
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
