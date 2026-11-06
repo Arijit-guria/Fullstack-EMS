@@ -20,7 +20,7 @@ export const createLeave=async(req,res)=>{
         }
         const today=new Date();
         today.setHours(0,0,0,0);
-        if(new Date(startDate)<=today || new Date(enddate)<=today){
+        if(new Date(startDate)<=today || new Date(endDate)<=today){
             return res.status(400).json({error:"Leave dates must be in the future"})
         }
         if(new Date(endDate)< new Date(startDate)){
@@ -58,7 +58,7 @@ export const getLeave=async(req,res)=>{
                     ...obj,
                     id:obj._id.toString(),
                     employee:obj.employeeId,
-                    employeeId:obj.employee?._id?.toString(),
+                    employeeId:obj.employeeId?._id?.toString(),
                 }
             })
             return res.json({data})
