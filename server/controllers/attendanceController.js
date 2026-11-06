@@ -25,7 +25,7 @@ export const clockInOut=async(req,res)=>{
                 status:isLate?"LATE":"PRESENT"
             })
             return res.json({success:true,type:"CHECK_IN",data:attendance});
-        }else if(!existing.checkout){
+        }else if(!existing.checkOut){
             const checkInTime=new Date(existing.checkIn).getTime()
             const diffMs=now.getTime()-checkInTime;
             const diffHours=diffMs/(1000*60*60)
@@ -33,10 +33,10 @@ export const clockInOut=async(req,res)=>{
             //complete working hours and day type
             const workingHours=parseFloat(diffHours.toFixed(2))
             let  dayType="Half day";
-            if(workingHours>=8) dayType="Full day";
-            else if(workingHours>=6) dayType="Three quarter day";
-            else if(workingHours>=4) dayType="Half day";
-            else dayType="Shor day";
+            if(workingHours>=8) dayType="Full Day";
+            else if(workingHours>=6) dayType="Three quarter Day";
+            else if(workingHours>=4) dayType="Half Day";
+            else dayType="Short Day";
             existing.workingHours=workingHours;
             existing.dayType=dayType;
             await existing.save();
