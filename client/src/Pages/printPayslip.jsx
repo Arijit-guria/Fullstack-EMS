@@ -3,15 +3,13 @@ import {useParams} from 'react-router-dom'
 import {dummyPayslipData} from '../assets/assets'
 import Loading from '../components/Loading'
 import {format} from 'date-fns'
+import api from '../api/axios'
 const PrintPayslip = () => {
   const{id}=useParams()
   const [payslip,setPayslip]=useState(null)
   const [loading,setLoading]=useState(true)
   useEffect(()=>{
-    setPayslip(dummyPayslipData.find((slip)=>slip._id===id))
-    setTimeout(()=>{
-      setLoading(false)
-    },1000)
+   api.get(`/payslips/${id}`).then((res)=>setPayslip(res.data?.data || res.data)).catch(console.error).finally(()=>setLoading(false))
   },[id])
   if(loading)return <Loading/>
   if(!payslip)return<p className='text-center py-12 text-slate-400'>payslip not found</p>
@@ -24,7 +22,7 @@ const PrintPayslip = () => {
       <div className='grid grid-cols-2 gap-6 mb-8'>
         <div>
           <p className='text-xs text-slate-400 uppercase tracking-wider mb-1'>Employee Name</p>
-          <p className='font-semibold text-slate-900'>{payslip.employee?.firstName}{payslip.employee?.lastName}</p>
+          <p className='font-semibold text-slate-900'>{payslip.employee?.firstName} {payslip.employee?.lastName}</p>
         </div>
         <div>
           <p className='text-xs text-slate-400 uppercase tracking-wider mb-1'>Position</p>

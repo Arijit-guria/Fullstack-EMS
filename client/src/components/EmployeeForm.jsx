@@ -3,12 +3,30 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { DEPARTMENTS } from '../assets/assets'
 import { Loader2Icon } from 'lucide-react'
+import api from '../api/axios'
+import toast from 'react-hot-toast';
 const EmployeeForm = ({initialData,onSuccess,onCancel}) => {
     const navigate=useNavigate()
     const [loading,setLoading]=useState(false)
     const isEditMode=!!initialData;
     const handleSubmit=async(e)=>{
         e.preventDefault();
+        setLoading(true)
+        const formData=new FormData(e.currentTarget)
+        if(isEditMode){
+            const pwd=formData.get("password")
+            if(!pwd)formData.delete("password")
+        }
+    try {
+        const url=isEditMode?`/employees/${initialData.id}`:"/employees";
+        const method=isEditMode ?"put":"post";
+        await api[method](url,formData);
+        onSuccess?onSuccess():navigate("/employees")
+    } catch (error) {
+        toast.error(error.response?.data?.error || error.message);
+    }finally{
+        setLoading(false)
+    }
         
     }
   return (
@@ -112,7 +130,7 @@ const EmployeeForm = ({initialData,onSuccess,onCancel}) => {
                 {isEditMode && (
                     <div>
                     <label className="block mb-2">Change Password</label>
-                    <input type="password" name="Password" placeholder="Leave blank to keep current password" />
+                    <input type="password" name="password" placeholder="Leave blank to keep current password" />
                 </div>
 
                 )}
@@ -135,7 +153,7 @@ const EmployeeForm = ({initialData,onSuccess,onCancel}) => {
                 Cancel
                 
             </button>
-            <button type="button" disabled={loading} className="btn-primary flex items-center justify-center">
+            <button type="submit" disabled={loading} className="btn-primary flex items-center justify-center">
                 {loading &&<Loader2Icon className="animate-spin w-4 h-4 mr-2" />}
                 {isEditMode ? 'Update Employee' : 'Create Employee'}
 

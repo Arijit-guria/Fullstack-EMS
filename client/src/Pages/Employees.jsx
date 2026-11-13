@@ -5,6 +5,7 @@ import { dummyEmployeeData,DEPARTMENTS } from '../assets/assets'
 import { Plus, Search, X } from 'lucide-react'
 import EmployeeCard from '../components/EmployeeCard'
 import EmployeeForm from '../components/EmployeeForm'
+import api from '../api/axios'
 const Employees = () => {
     const [employees, setEmployees] = useState([])
     const [loading, setLoading] = useState(true)
@@ -13,11 +14,15 @@ const Employees = () => {
     const [editEmployee,setEditEmployee] = useState(null)
     const [showCreateModal,setShowCreateModal] = useState(false)
     const fetchEmployees = useCallback(async () => {
-        setLoading(true)
-        setEmployees(dummyEmployeeData.filter((emp)=>(selectedDept? emp.department === selectedDept : emp)))
-        setTimeout(() => {
-            setLoading(false)
-        }, 1000)
+       try {
+        const url=selectedDept?`/employees?department=${selectedDept}`:"/employees";
+        const res=await api.get(url)
+        setEmployees(res.data)
+       } catch (error) {
+        console.error("Failed to fetch employees");
+       }finally{
+        setLoading(false)
+       }
     }, [selectedDept])
     useEffect(() => {
         fetchEmployees();
@@ -38,10 +43,10 @@ const Employees = () => {
 
         </div>
         {/*search bar*/ }
-        <div className="flex flex-col sm:flex-row gap-3 mv-6">
+        <div className="flex flex-col sm:flex-row gap-3 my-6">
             <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                <input placeholder='Search Employees...' className='w-full pl-10!' onChange={()=>setSearch(employees.target.value)} value={search}/>
+                <input placeholder='Search Employees...' className='w-full pl-10!' onChange={()=>setSearch(e.target.value)} value={search}/>
 
             </div>
             <select value={selectedDept} onChange={(e)=>setSelectedDept(e.target.value)} className='max-w-40'>
