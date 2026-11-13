@@ -101,8 +101,16 @@ const attendanceReminderCron = inngest.createFunction(
   const activeEmployees=await step.run("get-active-employees",async()=>{
     const employees=await Employee.find({
       isDeleted:false,
-      employmentStatus:"ACTIVE",
-
+      $or:[
+        {employmentStatus:"ACTIVE"},
+        {employeeStatus:"ACTIVE"},
+        {
+          $and:[
+            {employmentStatus:{$exists:false}},
+            {employeeStatus:{$exists:false}}
+          ]
+        }
+      ]
     }).lean();
     return employees.map((e)=>({
       _id:e._id.toString(),firstName:e.firstName,lastName:e.lastName,email:e.email,department:e.department
@@ -130,7 +138,7 @@ const attendanceReminderCron = inngest.createFunction(
   //step 6:send reminder emails
   if(absentEmployees.length>0){
     await step.run("send-reminder-emails",async()=>{
-      const emailPromises=absentEmployees.map((emp)=>{
+      const emailPromises=absentEmployees.map((emp)=>
         //send email
         sendEmail({
           to:emp.email,
@@ -147,8 +155,7 @@ const attendanceReminderCron = inngest.createFunction(
                                 <p style="font-size: 16px;"><strong>QuickEMS</strong></p>
                             </div>`
         })
-
-      })
+      )
       await Promise.all(emailPromises)
       return {emailSent:absentEmployees.length}
     })
