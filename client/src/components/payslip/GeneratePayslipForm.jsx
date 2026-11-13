@@ -1,5 +1,7 @@
 import { Loader2, Plus, X } from 'lucide-react'
 import React, { useState } from 'react'
+import api from '../../api/axios'
+import toast from 'react-hot-toast'
 
 const GeneratePayslipForm = ({employees,onSuccess}) => {
     const [isOpen,setIsOpen]=useState(false)
@@ -11,6 +13,17 @@ const GeneratePayslipForm = ({employees,onSuccess}) => {
     )
     const handleSubmit=async(e)=>{
         e.preventDefault();
+        setLoading(true)
+        const formData=new FormData(e.currentTarget);
+        const data=Object.fromEntries(formData.entries())
+        try {
+            await api.post('/payslips',data)
+            setIsOpen(false)
+            onSuccess()
+        } catch (err) {
+            toast.error(err.response?.data?.error || err.message)
+        }
+        setLoading(false)
     }
   return (
     <div className='fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
@@ -27,9 +40,10 @@ const GeneratePayslipForm = ({employees,onSuccess}) => {
                     <label className='block text-sm font-medium text-slate-700 mb-2'>
                         Employee
                     </label>
-                    <select name="employeeId required">
+                    <select name="employeeId" required>
+                        <option value="">Select Employee</option>
                         {employees.map((e)=>(
-                            <option value={e.id} key={e.id}>{e.firstName}{e.LastName}({e.position})</option>
+                            <option value={e.id} key={e.id}>{e.firstName} {e.lastName} ({e.position})</option>
                         ))}
                     </select>
 
@@ -62,16 +76,16 @@ const GeneratePayslipForm = ({employees,onSuccess}) => {
                        <label className='block text-sm font-medium text-slate-700 mb-2'>
                             Basic Salary
                     </label>
-                    <input type='number' name='basicsalary' required placeholder='5000'></input>
+                    <input type='number' name='basicSalary' required placeholder='5000'></input>
                     
                     </div>
                 {/*Allowences & deductions*/}
                 <div className='grid grid-cols-2 gap-4'>
                     <div>
                        <label className='block text-sm font-medium text-slate-700 mb-2'>
-                            Allowences
+                            Allowances
                     </label>
-                    <input type='number' name='allowences'  defaultValue='0'></input>
+                    <input type='number' name='allowances'  defaultValue='0'></input>
                     
                     </div>
                     <div>

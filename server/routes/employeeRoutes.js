@@ -6,6 +6,6 @@ const employeeRouter=Router();
 
 employeeRouter.get("/",protect,protectAdmin, getEmployees)
 employeeRouter.post("/",protect,protectAdmin,createEmployees)
-employeeRouter.put("/",protect,protectAdmin,updateEmployees)
-employeeRouter.delete("/",protect,protectAdmin,deleteEmployees)
+employeeRouter.put("/:id",protect,protectAdmin,updateEmployees)
+employeeRouter.delete("/:id",protect,protectAdmin,deleteEmployees)
 export default employeeRouter;

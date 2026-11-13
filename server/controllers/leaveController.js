@@ -10,7 +10,7 @@ import LeaveApplication from "../models/LeaveApplication.js";
 export const createLeave=async(req,res)=>{
     try {
         const session=req.session;
-        const employee=await Employee.findOne({userId:session._id})
+        const employee=await Employee.findOne({userId:session.userId})
         if(!employee)return res.status(404).json("Employee not found");
         if(employee.isDeleted){
             return res.status(403).json({error:"Your account is deactivated.you cannot apply for leave"})

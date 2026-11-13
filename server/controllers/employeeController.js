@@ -10,7 +10,7 @@ export const getEmployees=async(req,res)=>{
         const {department}=req.query
         const where={};
         if(department) where.department=department;
-        const employees=(await Employee.find(where)).toSorted({createdAt:-1}).populate("userId","email role").lean();
+        const employees=await Employee.find(where).sort({createdAt:-1}).populate("userId","email role").lean();
         const result=employees.map((emp)=>({
             ...emp,id:emp._id.toString(),user:emp.userId?{email:emp.userId.email,role:emp.userId.role}:null
         }))
@@ -25,14 +25,14 @@ export const getEmployees=async(req,res)=>{
 //P0ST /API/EMPLOYEE
 export const createEmployees=async(req,res)=>{
     try {
-        const {firstName,lastName,email,phone,position,department,basicSalary,allowences,deductions,joinDate,password,role,bio}=req.body;
+        const {firstName,lastName,email,phone,position,department,basicSalary,allowences,deductions,joinDate,temporaryPassword:password,role,bio}=req.body;
         if(!email || !password || !firstName || !lastName){
             return res.status(400).json({error:"Missing required fields"});
         }
         const hashed=await bcrypt.hash(password,10)
         const user=await User.create({
             email,
-            password,
+            password:hashed,
             role:role || "EMPLOYEE"
         })
         const employee=await Employee.create({
@@ -65,7 +65,7 @@ export const updateEmployees=async(req,res)=>{
      try {
         const {id}=req.params;
         const {firstName,lastName,email,phone,position,department,basicSalary,allowences,deductions,password,role,bio,employmentStatus}=req.body;
-        const employee=await employee.findById(id);
+        const employee=await Employee.findById(id);
         if(!employee) return res.status(404).json({error:"Employee not found"})
         
         await Employee.findByIdAndUpdate(id,{
@@ -104,7 +104,7 @@ export const updateEmployees=async(req,res)=>{
 export const deleteEmployees=async(req,res)=>{
     try {
         const {id}=req.params;
-        const employee=await employee.findById(id)
+        const employee=await Employee.findById(id)
         if(!employee)return res.status(404).json({error:"Employee not found"});
         employee.isDeleted=true;
         employee.employmentStatus="INACTIVE"
