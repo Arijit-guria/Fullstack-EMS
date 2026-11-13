@@ -12,7 +12,11 @@ export const getEmployees=async(req,res)=>{
         if(department) where.department=department;
         const employees=await Employee.find(where).sort({createdAt:-1}).populate("userId","email role").lean();
         const result=employees.map((emp)=>({
-            ...emp,id:emp._id.toString(),user:emp.userId?{email:emp.userId.email,role:emp.userId.role}:null
+            ...emp,
+            id:emp._id.toString(),
+            employmentStatus:emp.employmentStatus || emp.employeeStatus || "ACTIVE",
+            employeeStatus:emp.employeeStatus || emp.employmentStatus || "ACTIVE",
+            user:emp.userId?{email:emp.userId.email,role:emp.userId.role}:null
         }))
         return res.json(result)
     } catch (error) {
@@ -35,6 +39,8 @@ export const createEmployees=async(req,res)=>{
             password:hashed,
             role:role || "EMPLOYEE"
         })
+        const status=req.body.employmentStatus || req.body.employeeStatus || "ACTIVE";
+        const allowancesValue=Number(req.body.allowances ?? req.body.allowences ?? 0);
         const employee=await Employee.create({
             userId:user._id,
             firstName,
@@ -44,8 +50,11 @@ export const createEmployees=async(req,res)=>{
             position,
             department:department || "Engineering",
             basicSalary:Number(basicSalary) || 0,
-            allowences:Number(allowences) || 0,
+            allowances:allowancesValue,
+            allowences:allowancesValue,
             deductions:Number(deductions) || 0,
+            employmentStatus:status,
+            employeeStatus:status,
             joinDate:new Date(joinDate),
             bio:bio || "",
         })
@@ -64,12 +73,13 @@ export const createEmployees=async(req,res)=>{
 export const updateEmployees=async(req,res)=>{
      try {
         const {id}=req.params;
-        const {firstName,lastName,email,phone,position,department,basicSalary,allowences,deductions,password,role,bio,employmentStatus}=req.body;
+        const {firstName,lastName,email,phone,position,department,basicSalary,deductions,password,role,bio}=req.body;
+        const status=req.body.employmentStatus || req.body.employeeStatus || "ACTIVE";
+        const allowancesValue=Number(req.body.allowances ?? req.body.allowences ?? 0);
         const employee=await Employee.findById(id);
         if(!employee) return res.status(404).json({error:"Employee not found"})
         
         await Employee.findByIdAndUpdate(id,{
-            
             firstName,
             lastName,
             email,
@@ -77,9 +87,11 @@ export const updateEmployees=async(req,res)=>{
             position,
             department:department || "Engineering",
             basicSalary:Number(basicSalary) || 0,
-            allowences:Number(allowences) || 0,
+            allowances:allowancesValue,
+            allowences:allowancesValue,
             deductions:Number(deductions) || 0,
-            employmentStatus:employmentStatus || "ACTIVE",
+            employmentStatus:status,
+            employeeStatus:status,
             bio:bio || "",
         })
         //update user record
@@ -108,6 +120,7 @@ export const deleteEmployees=async(req,res)=>{
         if(!employee)return res.status(404).json({error:"Employee not found"});
         employee.isDeleted=true;
         employee.employmentStatus="INACTIVE"
+        employee.employeeStatus="INACTIVE"
         await employee.save()
         return res.json({success:true})
     } catch (error) {
